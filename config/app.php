@@ -147,6 +147,7 @@ return [
         
         // 追加
         Collective\Html\HtmlServiceProvider::class,
+        Thomaswelton\LaravelGravatar\LaravelGravatarServiceProvider::class,
 
     ],
 
@@ -200,6 +201,7 @@ return [
         // 追加
         'Form' => Collective\Html\FormFacade::class,
         'Html' => Collective\Html\HtmlFacade::class,
+        'Gravatar' => Thomaswelton\LaravelGravatar\Facades\Gravatar::class,
     ],
 
 ];
