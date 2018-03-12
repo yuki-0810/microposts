@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\Access\Authorizable;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use App\Micropost;
 
 class User extends Model implements AuthenticatableContract,
                                     AuthorizableContract,
@@ -96,5 +97,49 @@ class User extends Model implements AuthenticatableContract,
         $follow_user_ids = $this->followings()->lists('users.id')->toArray();
         $follow_user_ids[] = $this->id;
         return Micropost::whereIn('user_id', $follow_user_ids);
+    }
+    
+    public function favorites()
+    {
+        return $this->belongsToMany(Micropost::class, 'user_favorite', 'user_id', 'favpost_id')->withTimestamps();
+    }
+    
+    public function favorited()
+    {
+        return $this->belongsToMany(Micropost::class, 'user_favorite', 'favpost_id', 'user_id')->withTimestamps();
+    }
+    
+    public function add_favorite($postId) { 
+        
+        // 既にお気に入りしているかの確認 
+        $exist = $this->is_favorite($postId); 
+
+        if ($exist) {
+            // 既にお気に入りしていれば何もしない
+            return false;
+        } else {
+            // まだお気に入りしてなければお気に入りする
+            $this->favorites()->attach($postId);
+            return true;
+        }
+    }
+
+    public function delete_favorite($postId){
+    
+        // 既にお気に入りしているかの確認 
+        $exist = $this->is_favorite($postId);
+
+        if ($exist) {
+            // 既にフォローしていればフォローを外す
+            $this->favorites()->detach($postId);
+            return true;
+        } else {
+            // 未フォローであれば何もしない
+            return false;
+        }
+    }
+
+    public function is_favorite($postId) {
+        return $this->favorites()->where('favpost_id', $postId)->exists();
     }
 }
